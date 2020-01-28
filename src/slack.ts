@@ -1,18 +1,34 @@
 import * as github from '@actions/github';
-import Octokit from '@octokit/rest';
 import {MessageAttachment, MrkdwnElement} from '@slack/types';
 import {
   IncomingWebhook,
-  IncomingWebhookSendArguments,
+  IncomingWebhookDefaultArguments,
   IncomingWebhookResult,
-  IncomingWebhookDefaultArguments
+  IncomingWebhookSendArguments
 } from '@slack/webhook';
 import {Context} from '@actions/github/lib/context';
-import {thisExpression} from '@babel/types';
+import {
+  ChatPostMessageArguments,
+  ErrorCode,
+  WebClient
+} from '@slack/web-api';
 
 interface Accessory {
   color: string;
   result: string;
+}
+
+export interface SlackBotOptions {
+  token: string;
+  channel: string;
+  username: string;
+  icon_emoji: string;
+}
+
+export interface SlackPayload {
+  text: string;
+  attachments: MessageAttachment[];
+  unfurl_links: boolean;
 }
 
 class Block {
@@ -122,7 +138,7 @@ class Block {
 export class Slack {
   /**
    * Check if message mention is needed
-   * @param {string} mentionCondition mention condition
+   * @param {string} condition mention condition
    * @param {string} status job status
    * @returns {boolean}
    */
@@ -136,7 +152,9 @@ export class Slack {
    * @param {string} status
    * @param {string} mention
    * @param {string} mentionCondition
-   * @returns {IncomingWebhookSendArguments}
+   * @param {boolean} commitFlag
+   * @param {string} gitHubToken
+   * @returns {SlackPayload}
    */
   public async generatePayload(
     jobName: string,
@@ -144,8 +162,8 @@ export class Slack {
     mention: string,
     mentionCondition: string,
     commitFlag: boolean,
-    token?: string
-  ): Promise<IncomingWebhookSendArguments> {
+    gitHubToken?: string
+  ): Promise<SlackPayload> {
     const slackBlockUI = new Block();
     const notificationType: Accessory = slackBlockUI[status];
     const tmpText: string = `${jobName} ${notificationType.result}`;
@@ -158,9 +176,9 @@ export class Slack {
       fields: slackBlockUI.baseFields
     };
 
-    if (commitFlag && token) {
+    if (commitFlag && gitHubToken) {
       const commitFields: MrkdwnElement[] = await slackBlockUI.getCommitFields(
-        token
+        gitHubToken
       );
       Array.prototype.push.apply(baseBlock.fields, commitFields);
     }
@@ -170,7 +188,7 @@ export class Slack {
       blocks: [baseBlock]
     };
 
-    const payload: IncomingWebhookSendArguments = {
+    const payload: SlackPayload = {
       text,
       attachments: [attachments],
       unfurl_links: true
@@ -181,21 +199,51 @@ export class Slack {
 
   /**
    * Notify information about github actions to Slack
+   * @param {string} url
+   * @param {IncomingWebhookDefaultArguments} options
    * @param {IncomingWebhookSendArguments} payload
    * @returns {Promise<IncomingWebhookResult>} result
    */
-  public async notify(
+  public async notifyWebhook(
     url: string,
     options: IncomingWebhookDefaultArguments,
-    payload: IncomingWebhookSendArguments
+    payload: SlackPayload
   ): Promise<void> {
     const client: IncomingWebhook = new IncomingWebhook(url, options);
-    const response: IncomingWebhookResult = await client.send(payload);
+    const response: IncomingWebhookResult = await client.send({...payload});
 
     if (response.text !== 'ok') {
       throw new Error(`
       Failed to send notification to Slack
       Response: ${response.text}
+      `);
+    }
+  }
+
+  /**
+   * Notify information about github actions to Slack
+   * @param {string} token
+   * @param {string} channel
+   * @param {ChatPostMessageArguments} payload
+   * @returns {Promise<void>} result
+   */
+  public async notifyChat(
+    token: string,
+    channel: string,
+    payload: SlackPayload
+  ): Promise<void> {
+    const web = new WebClient(token);
+    try {
+      await web.chat.postMessage({channel: channel, ...payload});
+    } catch (error) {
+      if (error.code === ErrorCode.PlatformError) {
+        console.log(error.data);
+      } else {
+        console.log('An error occurred', error);
+      }
+      throw new Error(`
+      Failed to send notification to Slack
+      Response: ${error.data}
       `);
     }
   }

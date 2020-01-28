@@ -26,6 +26,9 @@ inputs:
   url:
     description: 'slack incoming webhook url'
     required: false
+  slack_token:
+    description: 'slack bot token'
+    required: false
   commit:
     description: 'whether include commit data or not (true or false)'
     required: false
