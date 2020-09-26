@@ -41,7 +41,7 @@
   "devDependencies": {
     "@types/jest": "^24.9.0",
     "@types/node": "^12.12.25",
-    "@zeit/ncc": "^0.20.5",
+    "@vercel/ncc": "^0.24.1",
     "husky": "^3.1.0",
     "jest": "^24.8.0",
     "jest-circus": "^24.7.1",
