@@ -7,6 +7,13 @@
 
 This is Slack Notification Action.
 
+# Announcement
+
+:rotating_light: Transferred repository from homoluctus :rotating_light:
+
+We don't need to rename from homoluctus/slatify to lazy-actions/slatify in .github/workflow/*.yml.
+You can use as it is, but we recommend renaming it to lazy-actions/slatify.
+
 # ToC
 
 <!-- TOC depthFrom:2 -->
