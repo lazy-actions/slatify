@@ -1,6 +1,6 @@
 name: 'Slatify'
-description: 'Slack Notification for Github Actions'
-author: 'homoluctus'
+description: 'Slack Notification Action'
+author: 'lazy-actions'
 inputs:
   type:
     description: 'job status (success, failure or cancelled)'
