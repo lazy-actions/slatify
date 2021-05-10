@@ -27921,6 +27921,8 @@ function run() {
             };
             const commitFlag = core.getInput('commit') === 'true';
             const token = core.getInput('token');
+            const moreFieldsString = core.getInput('more_fields');
+            const moreFields = JSON.parse(moreFieldsString);
             if (mention && !utils_1.isValidCondition(mentionCondition)) {
                 mention = '';
                 mentionCondition = '';
@@ -27936,7 +27938,7 @@ function run() {
       `);
             }
             const slack = new slack_1.Slack();
-            const payload = yield slack.generatePayload(jobName, status, mention, mentionCondition, commitFlag, token);
+            const payload = yield slack.generatePayload(jobName, status, mention, mentionCondition, commitFlag, token, moreFields);
             console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
             yield slack.notify(url, slackOptions, payload);
             console.info('Sent message to Slack');
@@ -28086,6 +28088,22 @@ class Block {
             return fields;
         });
     }
+    /**
+     * Get MakdwnElement fields including any data
+     * @param {object} fields
+     * @returns {Promise<MrkdwnElement[]>}
+     */
+    getMoreFields(moreFields) {
+        const fields = [];
+        for (let key in moreFields) {
+            const val = moreFields[key];
+            fields.push({
+                type: 'mrkdwn',
+                text: `*${key}*\n${val}`
+            });
+        }
+        return fields;
+    }
 }
 class Slack {
     /**
@@ -28105,7 +28123,7 @@ class Slack {
      * @param {string} mentionCondition
      * @returns {IncomingWebhookSendArguments}
      */
-    generatePayload(jobName, status, mention, mentionCondition, commitFlag, token) {
+    generatePayload(jobName, status, mention, mentionCondition, commitFlag, token, moreFields) {
         return __awaiter(this, void 0, void 0, function* () {
             const slackBlockUI = new Block();
             const notificationType = slackBlockUI[status];
@@ -28120,6 +28138,10 @@ class Slack {
             if (commitFlag && token) {
                 const commitFields = yield slackBlockUI.getCommitFields(token);
                 Array.prototype.push.apply(baseBlock.fields, commitFields);
+            }
+            if (moreFields) {
+                const anyDataFields = slackBlockUI.getMoreFields(moreFields);
+                Array.prototype.push.apply(baseBlock.fields, anyDataFields);
             }
             const attachments = {
                 color: notificationType.color,

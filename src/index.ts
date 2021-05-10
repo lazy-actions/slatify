@@ -21,6 +21,9 @@ async function run() {
     const commitFlag: boolean = core.getInput('commit') === 'true';
     const token: string = core.getInput('token');
 
+    const moreFieldsString: string = core.getInput('more_fields');
+    const moreFields: object = JSON.parse(moreFieldsString);
+
     if (mention && !isValidCondition(mentionCondition)) {
       mention = '';
       mentionCondition = '';
@@ -44,7 +47,8 @@ async function run() {
       mention,
       mentionCondition,
       commitFlag,
-      token
+      token,
+      moreFields
     );
     console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
 

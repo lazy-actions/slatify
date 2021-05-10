@@ -33,6 +33,9 @@ inputs:
   token:
     description: 'need to get commit data'
     required: false
+  more_fields:
+    description: 'any data fields'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -116,6 +116,26 @@ class Block {
     }
     return fields;
   }
+
+  /**
+   * Get MakdwnElement fields including any data
+   * @param {object} fields
+   * @returns {Promise<MrkdwnElement[]>}
+   */
+  public getMoreFields(moreFields: object): MrkdwnElement[] {
+    const fields: MrkdwnElement[] = [];
+
+    for (let key in moreFields) {
+      const val: string = moreFields[key];
+
+      fields.push({
+        type: 'mrkdwn',
+        text: `*${key}*\n${val}`
+      });
+    }
+
+    return fields;
+  }
 }
 
 export class Slack {
@@ -143,7 +163,8 @@ export class Slack {
     mention: string,
     mentionCondition: string,
     commitFlag: boolean,
-    token?: string
+    token?: string,
+    moreFields?: object
   ): Promise<IncomingWebhookSendArguments> {
     const slackBlockUI = new Block();
     const notificationType: Accessory = slackBlockUI[status];
@@ -162,6 +183,13 @@ export class Slack {
         token
       );
       Array.prototype.push.apply(baseBlock.fields, commitFields);
+    }
+
+    if (moreFields) {
+      const anyDataFields: MrkdwnElement[] = slackBlockUI.getMoreFields(
+        moreFields
+      );
+      Array.prototype.push.apply(baseBlock.fields, anyDataFields);
     }
 
     const attachments: MessageAttachment = {
