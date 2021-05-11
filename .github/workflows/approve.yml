@@ -11,6 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: lazy-actions/lgtm-image-action@master
+      - uses: lazy-actions/lgtm-image-action@main
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
