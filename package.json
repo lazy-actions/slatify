@@ -9,11 +9,6 @@
     "lint": "prettier --check --loglevel warn src/**",
     "test": "jest"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run format && npm run build"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/actions/container-toolkit-template.git"
@@ -42,7 +37,6 @@
     "@types/jest": "^24.9.0",
     "@types/node": "^12.12.25",
     "@vercel/ncc": "^0.24.1",
-    "husky": "^3.1.0",
     "jest": "^24.8.0",
     "jest-circus": "^24.7.1",
     "prettier": "^1.17.1",
