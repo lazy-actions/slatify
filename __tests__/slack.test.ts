@@ -175,23 +175,4 @@ describe('Slack Tests', () => {
       )
     ).toEqual(expectedPayload);
   });
-
-  test('Post generated payload', async () => {
-    github.context.eventName = 'pull_request';
-    const testEndpoint = 'https://slack.com/api/api.test';
-    const options = {
-      username: 'lazy-actions',
-      channel: 'test',
-      icon_emoji: 'pray'
-    };
-    const payload = Slack.generatePayload(
-      context.jobName,
-      context.status,
-      context.mention,
-      context.mentionCondition,
-      context.commit
-    );
-    const slack = Slack.notify(testEndpoint, options, payload);
-    await expect(slack).resolves.toBe(undefined);
-  });
 });
