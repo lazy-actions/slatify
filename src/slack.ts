@@ -118,7 +118,7 @@ export class Slack {
   ): Promise<void> {
     const client = new IncomingWebhook(url, options);
     const res = await client.send(payload);
-    if (!res.text['ok']) {
+    if (res.text !== 'ok') {
       throw new Error(`Failed to send notification to Slack
         Response: ${JSON.stringify(res.text)}
         `);
