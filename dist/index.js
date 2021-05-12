@@ -10195,7 +10195,7 @@ class Slack {
         return __awaiter(this, void 0, void 0, function* () {
             const client = new webhook_1.IncomingWebhook(url, options);
             const res = yield client.send(payload);
-            if (!res.text['ok']) {
+            if (res.text !== 'ok') {
                 throw new Error(`Failed to send notification to Slack
         Response: ${JSON.stringify(res.text)}
         `);
