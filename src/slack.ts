@@ -1,201 +1,127 @@
-import * as github from '@actions/github';
-import {Octokit} from '@octokit/rest';
-import {MessageAttachment, MrkdwnElement} from '@slack/types';
+import {context} from '@actions/github';
+import {MrkdwnElement} from '@slack/types';
 import {
   IncomingWebhook,
   IncomingWebhookSendArguments,
-  IncomingWebhookResult,
   IncomingWebhookDefaultArguments
 } from '@slack/webhook';
-import {Context} from '@actions/github/lib/context';
+import * as github from './github';
 
-interface Accessory {
-  color: string;
-  result: string;
-}
-
-class Block {
-  readonly context: Context = github.context;
-
-  public get success(): Accessory {
-    return {
+export class Block {
+  static readonly status = {
+    success: {
       color: '#2cbe4e',
       result: 'Succeeded'
-    };
-  }
-
-  public get failure(): Accessory {
-    return {
+    },
+    failure: {
       color: '#cb2431',
       result: 'Failed'
-    };
-  }
-
-  public get cancelled(): Accessory {
-    return {
+    },
+    cancelled: {
       color: '#ffc107',
       result: 'Cancelled'
-    };
-  }
-
-  public get isPullRequest(): boolean {
-    const {eventName} = this.context;
-    return eventName === 'pull_request';
-  }
-
-  /**
-   * Get slack blocks UI
-   * @returns {MrkdwnElement[]} blocks
-   */
-  public get baseFields(): MrkdwnElement[] {
-    const {sha, eventName, workflow, ref} = this.context;
-    const {owner, repo} = this.context.repo;
-    const {number} = this.context.issue;
-    const repoUrl: string = `https://github.com/${owner}/${repo}`;
-    let actionUrl: string = repoUrl;
-    let eventUrl: string = eventName;
-
-    if (this.isPullRequest) {
-      eventUrl = `<${repoUrl}/pull/${number}|${eventName}>`;
-      actionUrl += `/pull/${number}/checks`;
-    } else {
-      actionUrl += `/commit/${sha}/checks`;
     }
+  };
 
-    const fields: MrkdwnElement[] = [
+  public static getBaseField(): MrkdwnElement[] {
+    const {owner, repo} = context.repo;
+    const url = github.getWorkflowUrls();
+    const eventText = url.event
+      ? `<${url.event}|${context.eventName}>`
+      : context.eventName;
+    return [
       {
         type: 'mrkdwn',
-        text: `*repository*\n<${repoUrl}|${owner}/${repo}>`
+        text: `*repository*\n<${url.repo}|${owner}/${repo}>`
       },
       {
         type: 'mrkdwn',
-        text: `*ref*\n${ref}`
+        text: `*ref*\n${context.ref}`
       },
       {
         type: 'mrkdwn',
-        text: `*event name*\n${eventUrl}`
+        text: `*event name*\n${eventText}`
       },
       {
         type: 'mrkdwn',
-        text: `*workflow*\n<${actionUrl}|${workflow}>`
+        text: `*workflow*\n<${url.action}|${context.workflow}>`
       }
     ];
-    return fields;
   }
 
-  /**
-   * Get MrkdwnElement fields including git commit data
-   * @param {string} token
-   * @returns {Promise<MrkdwnElement[]>}
-   */
-  public async getCommitFields(token: string): Promise<MrkdwnElement[]> {
-    const {owner, repo} = this.context.repo;
-    const head_ref: string = process.env.GITHUB_HEAD_REF as string;
-    const ref: string = this.isPullRequest
-      ? head_ref.replace(/refs\/heads\//, '')
-      : this.context.sha;
-    const client = new Octokit({auth: token});
-    const {data: commit} = await client.repos.getCommit({owner, repo, ref});
-
-    const commitMsg: string = commit.commit.message.split('\n')[0];
-    const commitUrl: string = commit.html_url;
-    const fields: MrkdwnElement[] = [
+  public static getCommitField(commit: github.CommitContext): MrkdwnElement[] {
+    const commitMsg = commit.message.split('\n')[0];
+    const commitUrl = commit.url;
+    const field: MrkdwnElement[] = [
       {
         type: 'mrkdwn',
         text: `*commit*\n<${commitUrl}|${commitMsg}>`
       }
     ];
 
-    if (commit.author) {
-      const authorName: string = commit.author.login;
-      const authorUrl: string = commit.author.html_url;
-      fields.push({
+    const author = commit.author;
+    if (author) {
+      field.push({
         type: 'mrkdwn',
-        text: `*author*\n<${authorUrl}|${authorName}>`
+        text: `*author*\n<${author.url}|${author.name}>`
       });
     }
-    return fields;
+
+    return field;
   }
 }
 
 export class Slack {
-  /**
-   * Check if message mention is needed
-   * @param {string} mentionCondition mention condition
-   * @param {string} status job status
-   * @returns {boolean}
-   */
-  private isMention(condition: string, status: string): boolean {
+  public static isMention(condition: string, status: string): boolean {
     return condition === 'always' || condition === status;
   }
 
-  /**
-   * Generate slack payload
-   * @param {string} jobName
-   * @param {string} status
-   * @param {string} mention
-   * @param {string} mentionCondition
-   * @returns {IncomingWebhookSendArguments}
-   */
-  public async generatePayload(
+  public static generatePayload(
     jobName: string,
     status: string,
     mention: string,
     mentionCondition: string,
-    commitFlag: boolean,
-    token?: string
-  ): Promise<IncomingWebhookSendArguments> {
-    const slackBlockUI = new Block();
-    const notificationType: Accessory = slackBlockUI[status];
-    const tmpText: string = `${jobName} ${notificationType.result}`;
+    commit?: github.CommitContext
+  ): IncomingWebhookSendArguments {
+    const blockStatus = Block.status[status];
+    const tmpText = `${jobName} ${blockStatus.result}`;
     const text =
-      mention && this.isMention(mentionCondition, status)
+      mention && Slack.isMention(mentionCondition, status)
         ? `<!${mention}> ${tmpText}`
         : tmpText;
-    let baseBlock = {
+    const baseBlock = {
       type: 'section',
-      fields: slackBlockUI.baseFields
+      fields: Block.getBaseField()
     };
 
-    if (commitFlag && token) {
-      const commitFields: MrkdwnElement[] = await slackBlockUI.getCommitFields(
-        token
-      );
-      Array.prototype.push.apply(baseBlock.fields, commitFields);
+    if (commit) {
+      const commitField = Block.getCommitField(commit);
+      Array.prototype.push.apply(baseBlock.fields, commitField);
     }
 
-    const attachments: MessageAttachment = {
-      color: notificationType.color,
-      blocks: [baseBlock]
-    };
-
-    const payload: IncomingWebhookSendArguments = {
+    return {
       text,
-      attachments: [attachments],
+      attachments: [
+        {
+          color: blockStatus.color,
+          blocks: [baseBlock]
+        }
+      ],
       unfurl_links: true
     };
-
-    return payload;
   }
 
-  /**
-   * Notify information about github actions to Slack
-   * @param {IncomingWebhookSendArguments} payload
-   * @returns {Promise<IncomingWebhookResult>} result
-   */
-  public async notify(
+  public static async notify(
     url: string,
     options: IncomingWebhookDefaultArguments,
     payload: IncomingWebhookSendArguments
   ): Promise<void> {
-    const client: IncomingWebhook = new IncomingWebhook(url, options);
-    const response: IncomingWebhookResult = await client.send(payload);
-
-    if (response.text !== 'ok') {
-      throw new Error(`
-      Failed to send notification to Slack
-      Response: ${response.text}
-      `);
+    const client = new IncomingWebhook(url, options);
+    const res = await client.send(payload);
+    if (!res.text['ok']) {
+      throw new Error(`Failed to send notification to Slack
+        Response: ${JSON.stringify(res.text)}
+        `);
     }
   }
 }
