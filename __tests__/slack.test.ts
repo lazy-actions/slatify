@@ -191,6 +191,7 @@ describe('Slack Tests', () => {
       context.mentionCondition,
       context.commit
     );
-    await Slack.notify(testEndpoint, options, payload);
+    const slack = Slack.notify(testEndpoint, options, payload);
+    await expect(slack).resolves.toBe(undefined);
   });
 });
