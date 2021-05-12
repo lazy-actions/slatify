@@ -1,6 +1,7 @@
 # Slatify
 
-![GitHub Workflow](https://github.com/lazy-actions/slatify/workflows/lint/badge.svg)
+![Build](https://img.shields.io/github/workflow/status/lazy-actions/slatify/Build?label=build)
+![Test](https://img.shields.io/github/workflow/status/lazy-actions/slatify/Tests?label=test)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/lazy-actions/slatify?color=brightgreen)
 ![GitHub](https://img.shields.io/github/license/lazy-actions/slatify?color=brightgreen)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
