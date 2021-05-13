@@ -1,0 +1,23 @@
+{
+  "text": "This is test",
+  "attachments": [
+    {
+      "color": "danger",
+      "blocks": [
+        {
+          "type": "section",
+          "fields": [
+            {
+              "type": "mrkdwn",
+              "text": "Hello World"
+            },
+            {
+              "type": "mrkdwn",
+              "text": "YEAH!!!!!"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
