@@ -10099,6 +10099,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Slack = exports.Block = void 0;
+const core = __importStar(__webpack_require__(2186));
 const github_1 = __webpack_require__(5438);
 const webhook_1 = __webpack_require__(1095);
 const github = __importStar(__webpack_require__(978));
@@ -10193,12 +10194,16 @@ class Slack {
     }
     static notify(url, options, payload) {
         return __awaiter(this, void 0, void 0, function* () {
-            const client = new webhook_1.IncomingWebhook(url, options);
-            const res = yield client.send(payload);
-            if (res.text !== 'ok') {
-                throw new Error(`Failed to send notification to Slack
-        Response: ${JSON.stringify(res.text)}
-        `);
+            try {
+                const client = new webhook_1.IncomingWebhook(url, options);
+                const res = yield client.send(payload);
+                if (res.text !== 'ok') {
+                    throw new Error(JSON.stringify(res.text));
+                }
+            }
+            catch (err) {
+                core.error(err.message);
+                throw new Error('Failed to post message to Slack');
             }
         });
     }
