@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import {context} from '@actions/github';
 import {MrkdwnElement} from '@slack/types';
 import {
@@ -116,12 +117,15 @@ export class Slack {
     options: IncomingWebhookDefaultArguments,
     payload: IncomingWebhookSendArguments
   ): Promise<void> {
-    const client = new IncomingWebhook(url, options);
-    const res = await client.send(payload);
-    if (res.text !== 'ok') {
-      throw new Error(`Failed to send notification to Slack
-        Response: ${JSON.stringify(res.text)}
-        `);
+    try {
+      const client = new IncomingWebhook(url, options);
+      const res = await client.send(payload);
+      if (res.text !== 'ok') {
+        throw new Error(JSON.stringify(res.text));
+      }
+    } catch (err) {
+      core.error(err.message);
+      throw new Error('Failed to post message to Slack');
     }
   }
 }
