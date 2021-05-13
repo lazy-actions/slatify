@@ -1,4 +1,7 @@
 import * as github from '@actions/github';
+import nock from 'nock';
+import * as fs from 'fs';
+import * as path from 'path';
 import {Block, Slack} from '../src/slack';
 import {commonContext, repoUrl} from './github.test';
 
@@ -88,7 +91,7 @@ describe('Commit Field Tests', () => {
   });
 });
 
-describe('Slack Tests', () => {
+describe('Payload Tests', () => {
   const context = {
     jobName: 'test',
     status: 'success',
@@ -174,5 +177,38 @@ describe('Slack Tests', () => {
         context.commit
       )
     ).toEqual(expectedPayload);
+  });
+});
+
+describe('Post Message Tests', () => {
+  const baseUrl = 'https://this.is.test';
+  const options = {
+    username: 'lazy-actions',
+    channel: 'test',
+    icon_emoji: 'pray'
+  };
+  const payload = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'payload.json'), {encoding: 'utf8'})
+  );
+
+  test('Post successfully', async () => {
+    nock(baseUrl)
+      .post('/success')
+      .reply(200, 'ok');
+
+    const res = await Slack.notify(`${baseUrl}/success`, options, payload);
+    expect(res).toBe(undefined);
+  });
+
+  test('Throw error', async () => {
+    nock(baseUrl)
+      .post('/failure')
+      .reply(404, {error: 'channel_not_found'});
+
+    try {
+      await Slack.notify(`${baseUrl}/failure`, options, payload);
+    } catch (err) {
+      expect(err.message).toBe('Failed to post message to Slack');
+    }
   });
 });
