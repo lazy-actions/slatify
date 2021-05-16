@@ -10036,6 +10036,8 @@ function run() {
         };
         const commitFlag = core.getInput('commit') === 'true';
         const token = core.getInput('token');
+        const moreFieldsString = core.getInput('more_fields');
+        const moreFields = JSON.parse(moreFieldsString);
         if (mention && !utils_1.isValidCondition(mentionCondition)) {
             mention = '';
             mentionCondition = '';
@@ -10053,7 +10055,7 @@ function run() {
         if (commitFlag) {
             commit = yield github.getCommit(token);
         }
-        const payload = slack_1.Slack.generatePayload(jobName, status, mention, mentionCondition, commit);
+        const payload = slack_1.Slack.generatePayload(jobName, status, mention, mentionCondition, commit, moreFields);
         core.debug(`Generated payload for slack: ${JSON.stringify(payload)}`);
         yield slack_1.Slack.notify(url, slackOptions, payload);
         core.info('Post message to Slack');
@@ -10147,6 +10149,17 @@ class Block {
         }
         return field;
     }
+    static getMoreFields(moreFields) {
+        const fields = [];
+        for (let key in moreFields) {
+            const val = moreFields[key];
+            fields.push({
+                type: 'mrkdwn',
+                text: `*${key}*\n${val}`
+            });
+        }
+        return fields;
+    }
 }
 exports.Block = Block;
 Block.status = {
@@ -10167,7 +10180,7 @@ class Slack {
     static isMention(condition, status) {
         return condition === 'always' || condition === status;
     }
-    static generatePayload(jobName, status, mention, mentionCondition, commit) {
+    static generatePayload(jobName, status, mention, mentionCondition, commit, moreFields) {
         const blockStatus = Block.status[status];
         const tmpText = `${jobName} ${blockStatus.result}`;
         const text = mention && Slack.isMention(mentionCondition, status)
@@ -10180,6 +10193,10 @@ class Slack {
         if (commit) {
             const commitField = Block.getCommitField(commit);
             Array.prototype.push.apply(baseBlock.fields, commitField);
+        }
+        if (moreFields) {
+            const anyDataFields = Block.getMoreFields(moreFields);
+            Array.prototype.push.apply(baseBlock.fields, anyDataFields);
         }
         return {
             text,

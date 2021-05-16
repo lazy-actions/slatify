@@ -57,6 +57,7 @@ You can customize the following parameters:
 |channel|optional|Use Slack Incoming Webhook configuration|Slack channel name|
 |commit|optional|false|If true, slack notification includes the latest commit message and author.|
 |token|case by case|N/A|This token is used to get commit data.<br>If commit parameter is true, this parameter is required.<br>${{ secrets.GITHUB_TOKEN }} is recommended.|
+|more_fields|optional|N/A|Any data fields, example: `{"key1": "value1", "key2": "value2"}`|
 
 Please refer to [action.yml](./action.yml) for more details.
 

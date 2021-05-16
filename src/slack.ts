@@ -70,6 +70,21 @@ export class Block {
 
     return field;
   }
+
+  public static getMoreFields(moreFields: object): MrkdwnElement[] {
+    const fields: MrkdwnElement[] = [];
+
+    for (let key in moreFields) {
+      const val: string = moreFields[key];
+
+      fields.push({
+        type: 'mrkdwn',
+        text: `*${key}*\n${val}`
+      });
+    }
+
+    return fields;
+  }
 }
 
 export class Slack {
@@ -82,7 +97,8 @@ export class Slack {
     status: string,
     mention: string,
     mentionCondition: string,
-    commit?: github.CommitContext
+    commit?: github.CommitContext,
+    moreFields?: object
   ): IncomingWebhookSendArguments {
     const blockStatus = Block.status[status];
     const tmpText = `${jobName} ${blockStatus.result}`;
@@ -98,6 +114,13 @@ export class Slack {
     if (commit) {
       const commitField = Block.getCommitField(commit);
       Array.prototype.push.apply(baseBlock.fields, commitField);
+    }
+
+    if (moreFields) {
+      const anyDataFields: MrkdwnElement[] = Block.getMoreFields(
+        moreFields
+      );
+      Array.prototype.push.apply(baseBlock.fields, anyDataFields);
     }
 
     return {
