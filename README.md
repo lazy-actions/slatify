@@ -8,7 +8,7 @@ Forked from https://github.com/lazy-actions/slatify which appears to be abandone
 ![GitHub](https://img.shields.io/github/license/lazy-actions/slatify?color=brightgreen)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-This is Slack Notification Action.
+This is a Slack Notification Action.
 
 # Announcement
 
