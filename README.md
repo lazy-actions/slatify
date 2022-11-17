@@ -1,5 +1,7 @@
 # Slatify
 
+Forked from https://github.com/lazy-actions/slatify which appears to be abandoned
+
 ![Build](https://img.shields.io/github/workflow/status/lazy-actions/slatify/Build?label=build)
 ![Test](https://img.shields.io/github/workflow/status/lazy-actions/slatify/Tests?label=test)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/lazy-actions/slatify?color=brightgreen)
