@@ -2,10 +2,10 @@
 
 Forked from https://github.com/lazy-actions/slatify which appears to be abandoned
 
-![Build](https://img.shields.io/github/workflow/status/lazy-actions/slatify/Build?label=build)
-![Test](https://img.shields.io/github/workflow/status/lazy-actions/slatify/Tests?label=test)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/lazy-actions/slatify?color=brightgreen)
-![GitHub](https://img.shields.io/github/license/lazy-actions/slatify?color=brightgreen)
+![Build](https://img.shields.io/github/workflow/status/onvista-media/slatify/Build?label=build)
+![Test](https://img.shields.io/github/workflow/status/onvista-media/slatify/Tests?label=test)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/onvista-media/slatify?color=brightgreen)
+![GitHub](https://img.shields.io/github/license/onvista-media/slatify?color=brightgreen)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 This is a Slack Notification Action.
@@ -15,7 +15,7 @@ This is a Slack Notification Action.
 :rotating_light: Transferred repository from homoluctus :rotating_light:
 
 We don't need to rename from homoluctus/slatify to lazy-actions/slatify in .github/workflow/*.yml.
-You can use as it is, but we recommend renaming it to lazy-actions/slatify.
+You can use as it is, but we recommend renaming it to onvista-media/slatify.
 
 # ToC
 
@@ -68,7 +68,7 @@ Please refer to [action.yml](./action.yml) for more details.
 
 ```..github/workflows/example1.yml
 - name: Slack Notification
-  uses: lazy-actions/slatify@master
+  uses: onvista-media/slatify@master
   if: always()
   with:
     type: ${{ job.status }}
@@ -81,7 +81,7 @@ Please refer to [action.yml](./action.yml) for more details.
 
 ```..github/workflows/example2.yml
 - name: Slack Notification
-  uses: lazy-actions/slatify@master
+  uses: onvista-media/slatify@master
   if: always()
   with:
     type: ${{ job.status }}
@@ -104,4 +104,4 @@ Please refer to [action.yml](./action.yml) for more details.
 
 ## LICENSE
 
-[The MIT License (MIT)](https://github.com/lazy-actions/slatify/blob/master/LICENSE)
+[The MIT License (MIT)](https://github.com/onvista-media/slatify/blob/master/LICENSE)
