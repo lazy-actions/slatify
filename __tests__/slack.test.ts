@@ -208,7 +208,7 @@ describe('Post Message Tests', () => {
     try {
       await Slack.notify(`${baseUrl}/failure`, options, payload);
     } catch (err) {
-      expect(err.message).toBe('Failed to post message to Slack');
+      expect((err as Error).message).toBe('Failed to post message to Slack');
     }
   });
 });
