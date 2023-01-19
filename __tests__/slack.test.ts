@@ -95,7 +95,7 @@ describe('Payload Tests', () => {
   const context = {
     jobName: 'test',
     status: 'success',
-    mention: 'bot',
+    mention: 'here',
     mentionCondition: 'always',
     commit: {
       message: 'Hello World\nYEAH!!!!!',
