@@ -33,7 +33,7 @@
   "devDependencies": {
     "@types/jest": "^24.9.0",
     "@types/nock": "^11.1.0",
-    "@types/node": "^12.12.25",
+    "@types/node": "^20.11.28",
     "@vercel/ncc": "^0.24.1",
     "jest": "^24.8.0",
     "nock": "^13.0.11",
